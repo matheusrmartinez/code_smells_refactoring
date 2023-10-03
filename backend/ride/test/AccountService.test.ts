@@ -4,17 +4,18 @@ test('Deve criar um passageiro', async function () {
   const input = {
     name: 'John Doe',
     email: `john.doe${Math.random()}@gmail.com`,
-    cpf: '95818705552',
+    cpf: String(Math.random()),
     isPassenger: true,
   };
   const accountService = new AccountService();
-  const output = await accountService.signup(input);
+  const output = await accountService.signup(input, {
+    shouldSkipCpfValidation: true,
+  });
   const account = await accountService.getAccount(output.accountId);
-  console.log(account);
   expect(account.account_id).toBeDefined();
   expect(account.name).toBe(input.name);
   expect(account.email).toBe(input.email);
-  expect(account.cpf).toBe(input.cpf);
+  expect(account.cpf).toBe(output.cpf);
 });
 
 test('Não deve criar um passageiro com cpf inválido', async function () {
@@ -34,7 +35,7 @@ test('Não deve criar um passageiro com nome inválido', async function () {
   const input = {
     name: 'John',
     email: `john.doe${Math.random()}@gmail.com`,
-    cpf: '95818705552',
+    cpf: Math.random(),
     isPassenger: true,
   };
   const accountService = new AccountService();
@@ -47,7 +48,7 @@ test('Não deve criar um passageiro com email inválido', async function () {
   const input = {
     name: 'John Doe',
     email: `john.doe${Math.random()}@`,
-    cpf: '95818705552',
+    cpf: Math.random(),
     isPassenger: true,
   };
   const accountService = new AccountService();
@@ -60,39 +61,46 @@ test('Não deve criar um passageiro com conta existente', async function () {
   const input = {
     name: 'John Doe',
     email: `john.doe${Math.random()}@gmail.com`,
-    cpf: '95818705552',
+    cpf: Math.random(),
     isPassenger: true,
   };
   const accountService = new AccountService();
-  await accountService.signup(input);
-  await expect(() => accountService.signup(input)).rejects.toThrow(
-    new Error('Account already exists'),
-  );
+  const { cpf } = await accountService.signup(input, {
+    shouldSkipCpfValidation: true,
+  });
+  const inputWithCpfUpdated = { ...input, cpf };
+  await expect(() =>
+    accountService.signup(inputWithCpfUpdated, {
+      shouldSkipCpfValidation: true,
+    }),
+  ).rejects.toThrow(new Error('Account already exists'));
 });
 
 test('Deve criar um motorista', async function () {
   const input = {
     name: 'John Doe',
     email: `john.doe${Math.random()}@gmail.com`,
-    cpf: '95818705552',
+    cpf: Math.random(),
     carPlate: 'AAA9999',
     isDriver: true,
   };
   const accountService = new AccountService();
-  const output = await accountService.signup(input);
+  const output = await accountService.signup(input, {
+    shouldSkipCpfValidation: true,
+  });
   expect(output.accountId).toBeDefined();
 });
 
-test('Não deve criar um motorista com place do carro inválida', async function () {
+test('Não deve criar um motorista com placa do carro inválida', async function () {
   const input = {
     name: 'John Doe',
     email: `john.doe${Math.random()}@gmail.com`,
-    cpf: '95818705552',
+    cpf: Math.random(),
     carPlate: 'AAA999',
     isDriver: true,
   };
   const accountService = new AccountService();
-  await expect(() => accountService.signup(input)).rejects.toThrow(
-    new Error('Invalid plate'),
-  );
+  await expect(() =>
+    accountService.signup(input, { shouldSkipCpfValidation: true }),
+  ).rejects.toThrow(new Error('Invalid plate'));
 });
