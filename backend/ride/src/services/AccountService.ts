@@ -78,34 +78,4 @@ export default class AccountService {
       await client.end();
     }
   }
-
-  async getAccount(accountId: string) {
-    const client = new Client({
-      host: 'localhost',
-      port: 5432,
-      database: 'postgres',
-      user: 'postgres',
-      password: 'mysecretpassword',
-      max: 30, // use up to 30 connections
-    });
-
-    let account = null;
-    let response = null;
-
-    await client.connect();
-
-    try {
-      response = await client.query(
-        `select * from cccat13.account where account_id = '${accountId}'`,
-      );
-    } catch (error) {
-      console.error(error.message + 'Falha ao buscar conta.');
-      throw new Error(error.message);
-    } finally {
-      await client.end();
-      account = response.rows[0];
-    }
-
-    return account;
-  }
 }

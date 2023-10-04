@@ -12,5 +12,6 @@ create table cccat13.account (
 	is_driver boolean,
 	date timestamp,
 	is_verified boolean,
-	verification_code uuid
+	verification_code uuid,
+	primary key(account_id)
 );

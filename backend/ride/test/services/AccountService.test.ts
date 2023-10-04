@@ -1,20 +1,16 @@
-import AccountService from '../src/services/AccountService';
+import { getAccount } from '../../src/infra/repositories/account';
+import AccountService from '../../src/services/AccountService';
+import { passengerMock } from '../mocks/passengerMock';
 
 test('Deve criar um passageiro', async function () {
-  const input = {
-    name: 'John Doe',
-    email: `john.doe${Math.random()}@gmail.com`,
-    cpf: String(Math.random()),
-    isPassenger: true,
-  };
   const accountService = new AccountService();
-  const output = await accountService.signup(input, {
+  const output = await accountService.signup(passengerMock, {
     shouldSkipCpfValidation: true,
   });
-  const account = await accountService.getAccount(output.accountId);
+  const account = await getAccount(output.accountId);
   expect(account.account_id).toBeDefined();
-  expect(account.name).toBe(input.name);
-  expect(account.email).toBe(input.email);
+  expect(account.name).toBe(passengerMock.name);
+  expect(account.email).toBe(passengerMock.email);
   expect(account.cpf).toBe(output.cpf);
 });
 

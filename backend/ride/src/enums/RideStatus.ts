@@ -1,0 +1,6 @@
+export enum RideStatus {
+  IN_PROGRESS = 'IN_PROGRESS',
+  REQUESTED = 'REQUESTED',
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+}
