@@ -9,8 +9,8 @@ import { RideStatus } from '../enums/RideStatus';
 export default class RideService {
   async requestRide(account_id: string, coordinates: Coordinates) {
     const account = await getAccount(account_id);
-    console.log({ account }, 'account');
-    if (!!account.is_driver)
+
+    if (!account.is_passenger)
       throw new Error('The account id must belong to a passenger');
 
     const passengerHasRideOnGoing = await getRide(account_id);

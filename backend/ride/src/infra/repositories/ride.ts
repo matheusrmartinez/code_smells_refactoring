@@ -14,7 +14,7 @@ export const getRide = async (
 
   const query = `select * 
   from cccat13.ride as Ride 
-  INNER JOIN account ON 
+  INNER JOIN cccat13.account ON 
    Ride.${driverPassengerJoinerFilter} = account.account_id
   where Ride.${driverPassengerJoinerFilter} = '${accountId}' and 
   Ride.status != 'completed'
@@ -25,7 +25,6 @@ export const getRide = async (
   } catch (error) {
     throw new Error(`Falha ao buscar corrida.': ${error.message}`);
   } finally {
-    console.log(query, 'query que busca corrida');
     await client.end();
     if (!response?.rows) {
       return null;
@@ -41,7 +40,7 @@ export const addRide = async (ride: Ride) => {
   let query = null;
 
   try {
-    query = `insert into ride 
+    query = `insert into cccat13.ride 
     (
       ride_id, 
       passenger_id, 

@@ -1,7 +1,7 @@
 import crypto from 'crypto';
-// import pgp from 'pg-promise';
-import { Client } from 'pg';
 import CpfValidator from '../utils/CpfValidator';
+import ClientDB from '../utils/client_db';
+import { getAccountByCpf } from '../infra/repositories/account';
 
 export default class AccountService {
   cpfValidator: CpfValidator;
@@ -15,28 +15,17 @@ export default class AccountService {
   }
 
   async signup(input: any, { shouldSkipCpfValidation = false } = {}) {
-    const client = new Client({
-      host: 'localhost',
-      port: 5432,
-      database: 'postgres',
-      user: 'postgres',
-      password: 'mysecretpassword',
-      max: 30, // use up to 30 connections
-    });
-
+    const client = await new ClientDB().getClient();
     await client.connect();
 
     try {
       const accountId = crypto.randomUUID();
       const verificationCode = crypto.randomUUID();
       const date = new Date();
-      let existingAccount = false;
 
-      const res = await client.query(
-        `select * from cccat13.account where cpf = '${input.cpf}'`,
-      );
+      console.log(input.cpf, 'input cpf');
 
-      existingAccount = res?.rows?.length > 0;
+      const existingAccount = await getAccountByCpf(input.cpf);
 
       if (existingAccount) throw new Error('Account already exists');
       if (!input.name.match(/[a-zA-Z] [a-zA-Z]+/))
