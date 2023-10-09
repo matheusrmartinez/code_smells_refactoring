@@ -8,16 +8,15 @@ export const getAccount = async (accountId: string) => {
   const client = await new ClientDB().getClient();
   await client.connect();
 
+  const query = `select * from cccat13.account where account_id = '${accountId}'`;
+
   try {
-    response = await client.query(
-      `select * from cccat13.account where account_id = '${accountId}'`,
-    );
+    response = await client.query(query);
   } catch (error) {
-    console.error(error.message + 'Falha ao buscar conta.');
-    throw new Error(error.message);
+    throw new Error(`'Falha ao buscar conta.' ${error.message}`);
   } finally {
     await client.end();
-    account = response.rows[0];
+    account = response?.rows[0];
   }
 
   return account;
@@ -34,8 +33,7 @@ export const getAccountByCpf = async (cpf: string): Promise<Account> => {
       `select * from cccat13.account where cpf = '${cpf}'`,
     );
   } catch (error) {
-    console.error(error.message + 'Falha ao buscar conta pelo cpf.');
-    throw new Error(error.message);
+    throw new Error(`Falha ao buscar conta pelo cpf. ${error.message}`);
   } finally {
     await client.end();
     account = response.rows[0];

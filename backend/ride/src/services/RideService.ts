@@ -1,5 +1,11 @@
 import { getAccount } from '../infra/repositories/account';
-import { addRide, getRide } from '../infra/repositories/ride';
+import {
+  addRide,
+  getDriverRide as getDriverRide,
+  getRide,
+  getRideById,
+  updateRide,
+} from '../infra/repositories/ride';
 import { Coordinates } from '../interfaces/Coordinates';
 
 import { v4 as uuidv4 } from 'uuid';
@@ -34,6 +40,33 @@ export default class RideService {
     };
 
     const response = await addRide(ride);
+    return response;
+  }
+  async acceptRide(rideId: string, driverId: string, passengerId: string) {
+    const account = await getAccount(driverId);
+
+    if (!account.is_driver)
+      throw new Error('The account id must belong to a driver');
+
+    const ride = await getRideById(rideId, passengerId);
+
+    if (ride.status !== RideStatus.REQUESTED)
+      throw new Error('The ride status should be requested');
+
+    const onGoingDriverRide = await getDriverRide(driverId);
+
+    if (onGoingDriverRide)
+      throw new Error(
+        'You must finish your current ride before accepting a new one.',
+      );
+
+    const updatedRide: Ride = {
+      ...ride,
+      driver_id: driverId,
+      status: RideStatus.ACCEPTED,
+    };
+
+    const response = await updateRide(updatedRide);
     return response;
   }
 }

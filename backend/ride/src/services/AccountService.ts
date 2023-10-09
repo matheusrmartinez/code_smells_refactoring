@@ -62,7 +62,9 @@ export default class AccountService {
         cpf: input.cpf,
       };
     } catch (error) {
-      throw new Error(error.message);
+      throw new Error(
+        `Falha ao realizar o processo de signup: ${error.message}`,
+      );
     } finally {
       await client.end();
     }
