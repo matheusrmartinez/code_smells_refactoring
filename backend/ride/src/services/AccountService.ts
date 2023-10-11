@@ -17,9 +17,11 @@ export default class AccountService {
   async signup(input: any, { shouldSkipCpfValidation = false } = {}) {
     const client = await new ClientDB().getClient();
     await client.connect();
+    let errorMessage = null;
+    let accountId;
 
     try {
-      const accountId = crypto.randomUUID();
+      accountId = crypto.randomUUID();
       const verificationCode = crypto.randomUUID();
       const date = new Date();
 
@@ -50,21 +52,20 @@ export default class AccountService {
           verificationCode,
         ],
       );
+
       await this.sendEmail(
         input.email,
         'Verification',
         `Please verify your code at first login ${verificationCode}`,
       );
-      return {
-        accountId,
-        cpf: input.cpf,
-      };
     } catch (error) {
+      errorMessage = error.message;
       throw new Error(
         `Falha ao realizar o processo de signup: ${error.message}`,
       );
     } finally {
       await client.end();
+      return { errorMessage, accountId, cpf: input.cpf };
     }
   }
 }

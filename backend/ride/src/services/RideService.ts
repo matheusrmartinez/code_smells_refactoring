@@ -13,61 +13,84 @@ import { Ride } from '../interfaces/Ride';
 import { RideStatus } from '../enums/RideStatus';
 
 export default class RideService {
-  async requestRide(account_id: string, coordinates: Coordinates) {
-    const account = await getAccount(account_id);
+  async requestRide(accountId: string, coordinates: Coordinates) {
+    let errorMessage = null;
+    let ride: Ride = null;
 
-    if (!account.is_passenger)
-      throw new Error('The account id must belong to a passenger');
+    try {
+      const account = await getAccount(accountId);
 
-    const passengerHasRideOnGoing = await getRide(account_id);
+      if (!account.is_passenger)
+        throw new Error('The account id must belong to a passenger');
 
-    if (passengerHasRideOnGoing) throw new Error('Another ride is on going');
+      const passengerHasRideOnGoing = await getRide(accountId);
 
-    const rideUUID = uuidv4();
+      if (passengerHasRideOnGoing) throw new Error('Another ride is on going');
 
-    const ride: Ride = {
-      date: new Date(),
-      fare: 4,
-      distance: 5,
-      from_lat: coordinates.from.lat,
-      from_long: coordinates.from.long,
-      to_lat: coordinates.to.lat,
-      to_long: coordinates.to.long,
-      ride_id: rideUUID,
-      status: RideStatus.REQUESTED,
-      passenger_id: account.account_id,
-      driver_id: null,
-    };
+      const rideUUID = uuidv4();
 
-    const response = await addRide(ride);
-    return response;
+      ride = {
+        date: new Date(),
+        fare: 4,
+        distance: 5,
+        from_lat: coordinates.from.lat,
+        from_long: coordinates.from.long,
+        to_lat: coordinates.to.lat,
+        to_long: coordinates.to.long,
+        ride_id: rideUUID,
+        status: RideStatus.REQUESTED,
+        passenger_id: account.account_id,
+        driver_id: null,
+      };
+
+      const response = await addRide(ride);
+      return response;
+    } catch (error) {
+      errorMessage = error.message;
+      return errorMessage;
+    } finally {
+      return {
+        ride,
+        errorMessage,
+      };
+    }
   }
   async acceptRide(rideId: string, driverId: string, passengerId: string) {
-    const account = await getAccount(driverId);
+    let errorMessage = null;
+    let updateResponse = null;
 
-    if (!account.is_driver)
-      throw new Error('The account id must belong to a driver');
+    try {
+      const account = await getAccount(driverId);
 
-    const ride = await getRideById(rideId, passengerId);
+      if (!account.is_driver)
+        throw new Error('The account id must belong to a driver');
 
-    if (ride.status !== RideStatus.REQUESTED)
-      throw new Error('The ride status should be requested');
+      const ride = await getRideById(rideId, passengerId);
 
-    const onGoingDriverRide = await getDriverRide(driverId);
+      if (ride.status !== RideStatus.REQUESTED)
+        throw new Error('The ride status should be requested');
 
-    if (onGoingDriverRide)
-      throw new Error(
-        'You must finish your current ride before accepting a new one.',
-      );
+      const onGoingDriverRide = await getDriverRide(driverId);
 
-    const updatedRide: Ride = {
-      ...ride,
-      driver_id: driverId,
-      status: RideStatus.ACCEPTED,
-    };
+      if (onGoingDriverRide)
+        throw new Error(
+          'You must finish your current ride before accepting a new one.',
+        );
 
-    const response = await updateRide(updatedRide);
+      const updatedRide: Ride = {
+        ...ride,
+        driver_id: driverId,
+        status: RideStatus.ACCEPTED,
+      };
 
-    return response;
+      updateResponse = await updateRide(updatedRide);
+    } catch (error) {
+      errorMessage = error.message;
+    } finally {
+      return {
+        errorMessage,
+        updateResponse,
+      };
+    }
   }
 }
