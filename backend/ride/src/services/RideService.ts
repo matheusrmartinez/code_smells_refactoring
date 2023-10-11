@@ -67,6 +67,7 @@ export default class RideService {
     };
 
     const response = await updateRide(updatedRide);
+
     return response;
   }
 }

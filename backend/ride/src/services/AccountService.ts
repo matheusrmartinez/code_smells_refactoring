@@ -23,8 +23,6 @@ export default class AccountService {
       const verificationCode = crypto.randomUUID();
       const date = new Date();
 
-      console.log(input.cpf, 'input cpf');
-
       const existingAccount = await getAccountByCpf(input.cpf);
 
       if (existingAccount) throw new Error('Account already exists');

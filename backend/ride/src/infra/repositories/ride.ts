@@ -45,7 +45,8 @@ export const getRideById = async (
   from cccat13.ride as Ride 
   INNER JOIN cccat13.account as Account ON 
    Ride.passenger_id = Account.account_id
-  where Ride.ride_id = '${rideId}' and Ride.passenger_id = '${passengerId}' 
+  where Ride.ride_id = '${rideId}' 
+  and Ride.passenger_id = '${passengerId}' 
   and Ride.status != 'completed'
   `;
 
@@ -58,7 +59,6 @@ export const getRideById = async (
     if (!response?.rows) {
       return null;
     }
-    console.log(response.rows[0], 'rows returned');
     ride = response.rows[0];
   }
 
@@ -113,6 +113,7 @@ export const updateRide = async (ride: Ride) => {
   const client = await new ClientDB().getClient();
   await client.connect();
   let query = null;
+  let response = null;
 
   try {
     query = `update cccat13.ride 
@@ -121,15 +122,15 @@ export const updateRide = async (ride: Ride) => {
              where ride_id = '${ride.ride_id}'
      `;
 
-    await client.query(query);
+    response = await client.query(query);
   } catch (error) {
-    ride = null;
+    response = null;
     throw new Error(`Falha ao atualizar corrida.': ${error.message}`);
   } finally {
     await client.end();
   }
 
-  return ride;
+  return response;
 };
 export const getDriverRide = async (accountId: string): Promise<Ride> => {
   let ride: Ride = null;
@@ -143,7 +144,7 @@ export const getDriverRide = async (accountId: string): Promise<Ride> => {
   INNER JOIN cccat13.account as Account ON 
    Ride.driver_id = Account.account_id
   where Ride.driver_id = '${accountId}' 
-  and Ride.status == 'ACCEPTED' or Ride.status == 'IN_PROGRESS' 
+  and Ride.status = 'ACCEPTED' or Ride.status = 'IN_PROGRESS' 
   `;
 
   try {
