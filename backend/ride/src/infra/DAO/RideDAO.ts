@@ -56,6 +56,8 @@ export const getRideById = async (
     throw new Error(`Falha ao buscar corrida pelo id.': ${error.message}`);
   } finally {
     await client.end();
+    console.log(response, 'response');
+    console.log(query, 'query');
     if (!response?.rows) {
       return null;
     }

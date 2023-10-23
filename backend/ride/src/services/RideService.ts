@@ -1,4 +1,3 @@
-import { getById } from '../infra/DAO/AccountDAO';
 import {
   addRide,
   getDriverRide as getDriverRide,
@@ -11,24 +10,20 @@ import { Coordinates } from '../interfaces/Coordinates';
 import { v4 as uuidv4 } from 'uuid';
 import { Ride } from '../interfaces/Ride';
 import { RideStatus } from '../enums/RideStatus';
+import AccountService from './AccountService';
 
 export default class RideService {
   async requestRide(accountId: string, coordinates: Coordinates) {
     let errorMessage = null;
     let ride: Ride = null;
-
     try {
-      const account = await getById(accountId);
-
+      const accountService = new AccountService();
+      const account = await accountService.getAccount(accountId);
       if (!account.is_passenger)
         throw new Error('The account id must belong to a passenger');
-
       const passengerHasRideOnGoing = await getRide(accountId);
-
       if (passengerHasRideOnGoing) throw new Error('Another ride is on going');
-
       const rideUUID = uuidv4();
-
       ride = {
         date: new Date(),
         fare: 4,
@@ -42,7 +37,6 @@ export default class RideService {
         passenger_id: account.account_id,
         driver_id: null,
       };
-
       const response = await addRide(ride);
       return response;
     } catch (error) {
@@ -58,31 +52,26 @@ export default class RideService {
   async acceptRide(rideId: string, driverId: string, passengerId: string) {
     let errorMessage = null;
     let updateResponse = null;
-
     try {
-      const account = await getById(driverId);
-
+      const accountService = new AccountService();
+      const account = await accountService.getAccount(driverId);
       if (!account.is_driver)
         throw new Error('The account id must belong to a driver');
-
       const ride = await getRideById(rideId, passengerId);
 
-      if (ride.status !== RideStatus.REQUESTED)
+      console.log({ ride }, 'rideStatus');
+      if (ride?.status !== RideStatus.REQUESTED)
         throw new Error('The ride status should be requested');
-
       const onGoingDriverRide = await getDriverRide(driverId);
-
       if (onGoingDriverRide)
         throw new Error(
           'You must finish your current ride before accepting a new one.',
         );
-
       const updatedRide: Ride = {
         ...ride,
         driver_id: driverId,
         status: RideStatus.ACCEPTED,
       };
-
       updateResponse = await updateRide(updatedRide);
     } catch (error) {
       errorMessage = error.message;
