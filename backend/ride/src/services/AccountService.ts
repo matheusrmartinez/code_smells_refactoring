@@ -1,32 +1,31 @@
 import crypto from 'crypto';
 import CpfValidator from '../utils/CpfValidator';
 import ClientDB from '../utils/client_db';
-import { getAccountByCpf } from '../infra/repositories/account';
+import AccountDAODatabase from '../infra/DAO/AccountDAO';
+import AccountDAO from '../interfaces/AccountDAO';
+import MailerGateway from '../infra/MailerGateway';
 
 export default class AccountService {
   cpfValidator: CpfValidator;
+  mailerGateway: MailerGateway;
 
-  constructor() {
+  constructor(readonly accountDAO: AccountDAO = new AccountDAODatabase()) {
     this.cpfValidator = new CpfValidator();
+    this.mailerGateway = new MailerGateway();
   }
 
-  async sendEmail(email: string, subject: string, message: string) {
-    console.log(email, subject, message);
-  }
-
+  // port
   async signup(input: any, { shouldSkipCpfValidation = false } = {}) {
-    const client = await new ClientDB().getClient();
-    await client.connect();
     let errorMessage = null;
-    let accountId;
+    let client = null;
 
     try {
-      accountId = crypto.randomUUID();
-      const verificationCode = crypto.randomUUID();
-      const date = new Date();
-
-      const existingAccount = await getAccountByCpf(input.cpf);
-
+      client = await new ClientDB().getClient();
+      await client.connect();
+      input.accountId = crypto.randomUUID();
+      input.verificationCode = crypto.randomUUID();
+      input.date = new Date();
+      const existingAccount = await this.accountDAO.getByCpf(input.cpf);
       if (existingAccount) throw new Error('Account already exists');
       if (!input.name.match(/[a-zA-Z] [a-zA-Z]+/))
         throw new Error('Invalid name');
@@ -37,26 +36,11 @@ export default class AccountService {
       }
       if (input.isDriver && !input.carPlate.match(/[A-Z]{3}[0-9]{4}/))
         throw new Error('Invalid plate');
-      await client.query(
-        'insert into cccat13.account (account_id, name, email, cpf, car_plate, is_passenger, is_driver, date, is_verified, verification_code) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
-        [
-          accountId,
-          input.name,
-          input.email,
-          input.cpf,
-          input.carPlate,
-          !!input.isPassenger,
-          !!input.isDriver,
-          date,
-          false,
-          verificationCode,
-        ],
-      );
-
-      await this.sendEmail(
+      await this.accountDAO.save(input);
+      await this.mailerGateway.send(
         input.email,
         'Verification',
-        `Please verify your code at first login ${verificationCode}`,
+        `Please verify your code at first login ${input.verificationCode}`,
       );
     } catch (error) {
       errorMessage = error.message;
@@ -65,7 +49,13 @@ export default class AccountService {
       );
     } finally {
       await client.end();
-      return { errorMessage, accountId, cpf: input.cpf };
+      return { errorMessage, accountId: input.accountId, cpf: input.cpf };
     }
+  }
+
+  // port
+  async getAccount(accountId: string) {
+    const account = await this.accountDAO.getById(accountId);
+    return account;
   }
 }

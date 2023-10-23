@@ -1,10 +1,10 @@
 import { RideStatus } from '../../src/enums/RideStatus';
-import { getRideById } from '../../src/infra/repositories/ride';
+import { getRideById } from '../../src/infra/DAO/RideDAO';
 import { Ride } from '../../src/interfaces/Ride';
 import AccountService from '../../src/services/AccountService';
 import RideService from '../../src/services/RideService';
-import { driverMock } from '../mocks/driverMock';
-import { passengerMock } from '../mocks/passengerMock';
+import { getDriverMock } from '../mocks/driverMock';
+import { getPassengerMock } from '../mocks/passengerMock';
 
 describe('Ride Service', () => {
   describe('requestRide', () => {
@@ -14,7 +14,7 @@ describe('Ride Service', () => {
     });
 
     it('deve retornar um erro caso o passageiro já possua uma corrida em andamento', async () => {
-      const passengerMocked = { ...passengerMock, cpf: Math.random() };
+      const passengerMocked = { ...getPassengerMock, cpf: Math.random() };
 
       const { accountId } = await new AccountService().signup(passengerMocked, {
         shouldSkipCpfValidation: true,
@@ -37,7 +37,7 @@ describe('Ride Service', () => {
       rideService = null;
     });
     it('deve retornar erro caso a corrida seja solicitada por uma conta de não passageiro', async () => {
-      const driverMocked = { ...driverMock, cpf: Math.random() };
+      const driverMocked = { ...getDriverMock(), cpf: Math.random() };
 
       const { accountId } = await new AccountService().signup(driverMocked, {
         shouldSkipCpfValidation: true,
@@ -55,7 +55,7 @@ describe('Ride Service', () => {
       rideService = null;
     });
     it('deve retornar uma corrida caso seja um passageiro e não tenha corrida em andamento', async () => {
-      const passengerMocked = { ...passengerMock, cpf: Math.random() };
+      const passengerMocked = { ...getPassengerMock, cpf: Math.random() };
 
       const { accountId } = await new AccountService().signup(passengerMocked, {
         shouldSkipCpfValidation: true,
@@ -79,13 +79,13 @@ describe('Ride Service', () => {
     });
 
     it('deve retornar erro caso a corrida seja aceita por uma conta de não motorista', async () => {
-      const passengerMocked = { ...passengerMock, cpf: Math.random() };
+      const passengerMocked = { ...getPassengerMock, cpf: Math.random() };
 
       const { accountId } = await new AccountService().signup(passengerMocked, {
         shouldSkipCpfValidation: true,
       });
 
-      const driverMocked = { ...passengerMock, cpf: Math.random() };
+      const driverMocked = { ...getPassengerMock, cpf: Math.random() };
 
       await new AccountService().signup(driverMocked, {
         shouldSkipCpfValidation: true,
@@ -104,13 +104,13 @@ describe('Ride Service', () => {
     });
 
     it('deve retornar um erro caso o status da corrida seja diferente de requested', async () => {
-      const passengerMocked = { ...passengerMock, cpf: Math.random() };
+      const passengerMocked = { ...getPassengerMock, cpf: Math.random() };
 
       const { accountId } = await new AccountService().signup(passengerMocked, {
         shouldSkipCpfValidation: true,
       });
 
-      const driverMocked = { ...driverMock, cpf: Math.random() };
+      const driverMocked = { ...getDriverMock, cpf: Math.random() };
 
       const { accountId: driverId } = await new AccountService().signup(
         driverMocked,
@@ -134,7 +134,7 @@ describe('Ride Service', () => {
     });
 
     it('deve retornar um erro caso já exista uma outra corrida com status accepted ou in progress para o motorista', async () => {
-      const firstPassengerMocked = { ...passengerMock, cpf: Math.random() };
+      const firstPassengerMocked = { ...getPassengerMock, cpf: Math.random() };
 
       const { accountId: firstAccountId } = await new AccountService().signup(
         firstPassengerMocked,
@@ -143,7 +143,7 @@ describe('Ride Service', () => {
         },
       );
 
-      const secondPassengerMocked = { ...passengerMock, cpf: Math.random() };
+      const secondPassengerMocked = { ...getPassengerMock, cpf: Math.random() };
 
       const { accountId: secondAccountId } = await new AccountService().signup(
         secondPassengerMocked,
@@ -152,7 +152,7 @@ describe('Ride Service', () => {
         },
       );
 
-      const driverMocked = { ...driverMock, cpf: Math.random() };
+      const driverMocked = { ...getDriverMock, cpf: Math.random() };
 
       const { accountId: driverId } = await new AccountService().signup(
         driverMocked,
@@ -191,7 +191,7 @@ describe('Ride Service', () => {
     });
 
     it('deve atualizar o status da corrida para accepted', async () => {
-      const firstPassengerMocked = { ...passengerMock, cpf: Math.random() };
+      const firstPassengerMocked = { ...getPassengerMock, cpf: Math.random() };
 
       const { accountId: passengerId } = await new AccountService().signup(
         firstPassengerMocked,
@@ -200,7 +200,7 @@ describe('Ride Service', () => {
         },
       );
 
-      const driverMocked = { ...driverMock, cpf: Math.random() };
+      const driverMocked = { ...getDriverMock, cpf: Math.random() };
 
       const { accountId: driverId } = await new AccountService().signup(
         driverMocked,

@@ -1,5 +1,4 @@
 import express, { Response, Request } from 'express';
-import { getRide } from '../infra/repositories/ride';
 import RideService from '../services/RideService';
 
 export const rideRouter = express.Router();

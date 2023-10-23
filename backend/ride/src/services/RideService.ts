@@ -1,11 +1,11 @@
-import { getAccount } from '../infra/repositories/account';
+import { getById } from '../infra/DAO/AccountDAO';
 import {
   addRide,
   getDriverRide as getDriverRide,
   getRide,
   getRideById,
   updateRide,
-} from '../infra/repositories/ride';
+} from '../infra/DAO/RideDAO';
 import { Coordinates } from '../interfaces/Coordinates';
 
 import { v4 as uuidv4 } from 'uuid';
@@ -18,7 +18,7 @@ export default class RideService {
     let ride: Ride = null;
 
     try {
-      const account = await getAccount(accountId);
+      const account = await getById(accountId);
 
       if (!account.is_passenger)
         throw new Error('The account id must belong to a passenger');
@@ -60,7 +60,7 @@ export default class RideService {
     let updateResponse = null;
 
     try {
-      const account = await getAccount(driverId);
+      const account = await getById(driverId);
 
       if (!account.is_driver)
         throw new Error('The account id must belong to a driver');
