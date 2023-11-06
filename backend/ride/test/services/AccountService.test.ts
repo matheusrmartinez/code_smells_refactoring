@@ -2,8 +2,8 @@ import sinon from 'sinon';
 import AccountService from '../../src/services/AccountService';
 import { getDriverMock } from '../mocks/driverMock';
 import { getPassengerMock } from '../mocks/passengerMock';
-import AccountDAO from '../../src/infra/DAO/AccountDAO';
-import AccountDAOMemory from '../../src/infra/DAO/AccountDAOMemory';
+import AccountDAO from '../../src/infra/repository/AccountDAODatabase';
+import AccountDAOMemory from '../../src/infra/repository/AccountDAOMemory';
 import MailerGateway from '../../src/infra/MailerGateway';
 
 test('Deve criar um passageiro', async function () {

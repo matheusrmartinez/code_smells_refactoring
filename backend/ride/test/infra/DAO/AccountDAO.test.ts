@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import AccountDAO from '../../../src/infra/DAO/AccountDAO';
+import AccountDAO from '../../../src/infra/repository/AccountDAODatabase';
 import { getPassengerMock } from '../../mocks/passengerMock';
 
 test('Deve criar um registro na tabela account e consultar por cpf', async function () {

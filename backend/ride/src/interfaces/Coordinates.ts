@@ -1,10 +1,9 @@
 export interface Coordinates {
-  from: {
-    lat: number;
-    long: number;
-  };
-  to: {
-    lat: number;
-    long: number;
-  };
+  from: Coordinate;
+  to: Coordinate;
+}
+
+export interface Coordinate {
+  lat: number;
+  long: number;
 }

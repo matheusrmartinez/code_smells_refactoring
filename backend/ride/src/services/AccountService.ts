@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import CpfValidator from '../utils/CpfValidator';
 import ClientDB from '../utils/client_db';
-import AccountDAODatabase from '../infra/DAO/AccountDAO';
-import AccountDAO from '../interfaces/AccountDAO';
+import AccountDAODatabase from '../infra/repository/AccountDAODatabase';
+import AccountDAO from '../interfaces/DAO/AccountDAO';
 import MailerGateway from '../infra/MailerGateway';
 
 export default class AccountService {

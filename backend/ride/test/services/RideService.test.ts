@@ -1,5 +1,5 @@
 import { RideStatus } from '../../src/enums/RideStatus';
-import { getRideById } from '../../src/infra/DAO/RideDAO';
+import RideDAODatabase from '../../src/infra/repository/RideDAODatabase';
 import AccountService from '../../src/services/AccountService';
 import RideService from '../../src/services/RideService';
 import { getDriverMock } from '../mocks/driverMock';
@@ -203,7 +203,7 @@ describe('Ride Service', () => {
       );
     });
 
-    it.only('deve atualizar o status da corrida para accepted', async () => {
+    it('deve atualizar o status da corrida para accepted', async () => {
       const firstPassengerMocked = getPassengerMock();
 
       const { accountId: passengerId } = await new AccountService().signup(
@@ -228,8 +228,14 @@ describe('Ride Service', () => {
         from: { lat: 2, long: 3 },
         to: { lat: 4, long: 5 },
       });
+
+      const rideDAO = new RideDAODatabase();
+
       await rideService.acceptRide(ride.ride_id, driverId, passengerId);
-      const updatedRide = await getRideById(ride.ride_id, passengerId);
+      const updatedRide = await rideDAO.getByRideAndPassengerId(
+        ride.ride_id,
+        passengerId,
+      );
       expect(updatedRide).toHaveProperty('status', RideStatus.ACCEPTED);
       expect(updatedRide).toHaveProperty('passenger_id', passengerId);
       expect(updatedRide).toHaveProperty('driver_id', driverId);

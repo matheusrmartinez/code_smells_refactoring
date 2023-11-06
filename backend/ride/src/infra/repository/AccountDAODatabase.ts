@@ -1,5 +1,5 @@
 import { Account } from '../../interfaces/Account';
-import AccountDAO from '../../interfaces/AccountDAO';
+import AccountDAO from '../../interfaces/DAO/AccountDAO';
 import ClientDB from '../../utils/client_db';
 
 export default class AccountDAODatabase implements AccountDAO {
@@ -47,7 +47,6 @@ export default class AccountDAODatabase implements AccountDAO {
     let client = null;
     try {
       client = await new ClientDB().getClient();
-      console.log({ account }, 'account log');
       await client.connect();
       await client.query(
         'insert into cccat13.account (account_id, name, email, cpf, car_plate, is_passenger, is_driver, date, is_verified, verification_code) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
